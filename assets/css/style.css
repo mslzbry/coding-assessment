@@ -26,11 +26,11 @@ body {
 }
 
 button {
-
+  background-color: #879274;
   border-radius: 8px;
   color: #13293d;
   cursor: pointer;
-  font-size: 2em;
+  /*font-size: 2em;*/
   letter-spacing: 0.21px;
   line-height: 16px;
   max-width: 255px;
@@ -104,6 +104,24 @@ section {
 
 .timer-text {
   padding: 55px;
+}
+
+/*
+ol li {
+  background-color:
+}*/
+
+ol {
+  list-style: none;
+  counter-reset: olCounter;
+}
+
+li {
+  counter-increment: olCounter;
+}
+
+li button::before {
+  content: counter(olCounter) ". ";
 }
 
 @media screen and (max-width: 1183px) {

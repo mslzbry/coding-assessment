@@ -1,21 +1,21 @@
 var question = document.querySelector('.question')
-var win = document.querySelector('.win')
-var lose = document.querySelector('.lose')
+var score = document.querySelector('.score')
+
 var timerElement = document.querySelector('.timer-count')
 var startButton = document.querySelector('#start-button')
 var options = $('#options')
+var feedback = document.querySelector('#feedback')
 
-var chosenWord = ''
-var numBlanks = 0
-var winCounter = 0
-var loseCounter = 0
+var scoreCounter = 0
 var isWin = false
 var timer
 var timerCount
+var points = 0
+var questionIndex = 0
 
 //stores q&a
 var questions = [
-  'What programming language is one of the core technologies of the World Wide Web,alongside HTML and CSS?',
+  'What programming language is one of the core technologies of the World Wide Web, alongside HTML and CSS?',
   'How do you add comments to JavaScript code?',
   'What are the looping structures in JavaScript?'
 ]
@@ -29,13 +29,12 @@ var choices = [
 // The init function is called when the page loads
 function init () {
   getWins()
-  getlosses()
 }
 
 // The startGame function is called when the start button is clicked
 function startGame () {
   isWin = false
-  timerCount = 10
+  timerCount = 90
   // Prevents start button from being clicked when round is in progress
   startButton.disabled = true
   /*renderBlanks()*/
@@ -43,23 +42,13 @@ function startGame () {
   startTimer()
 }
 
-// The winGame function is called when the win condition is met
 function winGame () {
-  question.textContent = 'YOU WON!!!🏆 '
-  winCounter++
+  scoreCounter++
   startButton.disabled = false
   setWins()
 }
 
-// The loseGame function is called when timer reaches 0
-function loseGame () {
-  question.textContent = 'GAME OVER'
-  loseCounter++
-  startButton.disabled = false
-  setLosses()
-}
-
-// The setTimer function starts and stops the timer and triggers winGame() and loseGame()
+// The setTimer function starts and stops the timer and triggers winGame()
 function startTimer () {
   // Sets timer
   timer = setInterval(function () {
@@ -77,12 +66,37 @@ function startTimer () {
     if (timerCount === 0) {
       // Clears interval
       clearInterval(timer)
-      loseGame()
+      //TODO when time runs out, page with high score and initials
     }
   }, 1000)
 }
 
+var optionButtons
 //starts quiz
+
+function displayQuestion (questionIndex) {
+  //var questionIndex = 0 // the index we use to map the list of questions to the list of choices and answers
+  var chosenQuestion = questions[questionIndex]
+  question.textContent = chosenQuestion
+
+  for (var j = 0; j < choices[questionIndex].length; j++) {
+    options.append(
+      '<li><button class="option">' +
+        choices[questionIndex][j] +
+        '</button></li>'
+    )
+  }
+  optionButtons = document.querySelectorAll('.option')
+
+  // add event listener to each button
+  for (var k = 0; k < optionButtons.length; k++) {
+    optionButtons[k].addEventListener('click', e => {
+      checkAnswer(e.target.innerText, questionIndex)
+    })
+  }
+  console.log(optionButtons)
+}
+
 function startQuiz () {
   startButton.style.display = 'none'
   var cards = document.getElementsByClassName('card')
@@ -90,78 +104,52 @@ function startQuiz () {
     console.log(cards[i])
     cards[i].style.display = 'block'
   }
-  var chosenQuestion = questions[0]
-  question.textContent = chosenQuestion
+  displayQuestion(questionIndex)
+}
 
-  for (var j = 0; j < choices[0].length; j++) {
-    options.append('<li>' + choices[0][j] + '</li>')
+function checkAnswer (selectedAnswer, questionIndex) {
+  console.log(questionIndex)
+  console.log(selectedAnswer)
+
+  if (answers[questionIndex] === selectedAnswer) {
+    console.log('correct')
+    // display correct on screen
+    feedback.textContent = 'Correct!'
+    // add one point
+    points++
+    score.textContent = points
+  } else {
+    console.log('wrong')
+    // display wrong on screen
+    feedback.textContent = 'Incorrect!'
+    // substract 10s from time
+    timerCount = timerCount - 10
   }
+  // move onto next question
+  questionIndex++
+  displayQuestion(questionIndex)
 }
 
 // Updates win count on screen and sets win count to client storage
 function setWins () {
-  win.textContent = winCounter
-  localStorage.setItem('winCount', winCounter)
-}
-
-// Updates lose count on screen and sets lose count to client storage
-function setLosses () {
-  lose.textContent = loseCounter
-  localStorage.setItem('loseCount', loseCounter)
+  score.textContent = scoreCounter
+  localStorage.setItem('scoreCount', scoreCounter)
 }
 
 // These functions are used by init
 function getWins () {
   // Get stored value from client storage, if it exists
-  var storedWins = localStorage.getItem('winCount')
+  var storedScore = localStorage.getItem('scoreCount')
   // If stored value doesn't exist, set counter to 0
-  if (storedWins === null) {
-    winCounter = 0
+  if (storedScore === null) {
+    scoreCounter = 0
   } else {
     // If a value is retrieved from client storage set the winCounter to that value
-    winCounter = storedWins
+    scoreCounter = storedScore
   }
   //Render win count to page
-  win.textContent = winCounter
+  score.textContent = scoreCounter
 }
-
-function getlosses () {
-  var storedLosses = localStorage.getItem('loseCount')
-  if (storedLosses === null) {
-    loseCounter = 0
-  } else {
-    loseCounter = storedLosses
-  }
-  lose.textContent = loseCounter
-}
-
-/*
-function checkWin () {
-  // If the word equals the blankLetters array when converted to string, set isWin to true
-  if (chosenWord === blanksLetters.join('')) {
-    // This value is used in the timer function to test if win condition is met
-    isWin = true
-  }
-}*/
-
-/*
-// Tests if guessed letter is in word and renders it to the screen.
-function checkLetters (letter) {
-  var letterInWord = false
-  for (var i = 0; i < numBlanks; i++) {
-    if (chosenWord[i] === letter) {
-      letterInWord = true
-    }
-  }
-  if (letterInWord) {
-    for (var j = 0; j < numBlanks; j++) {
-      if (chosenWord[j] === letter) {
-        blanksLetters[j] = letter
-      }
-    }
-    wordBlank.textContent = blanksLetters.join(' ')
-  }
-}*/
 
 // Attach event listener to start button to call startGame function on click
 startButton.addEventListener('click', startGame)
@@ -173,12 +161,11 @@ init()
 var resetButton = document.querySelector('.reset-button')
 
 function resetGame () {
-  // Resets win and loss counts
-  winCounter = 0
-  loseCounter = 0
-  // Renders win and loss counts and sets them into client storage
+  // clears score to zero
+  scoreCounter = 0
+
+  // shows score, stores in local
   setWins()
-  setLosses()
 }
 // Attaches event listener to button
 resetButton.addEventListener('click', resetGame)
