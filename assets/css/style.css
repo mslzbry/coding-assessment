@@ -74,6 +74,7 @@ section {
 }
 
 .card {
+  display: none;
   border: 1px solid #eceff1;
   border-radius: 8px;
   box-shadow: rgba(60, 64, 67, 2) 0 1px 2px 0,
@@ -82,11 +83,13 @@ section {
   padding: 20px;
 }
 
-.word-blanks {
-  line-height: 360px;
-}
+/*
+.question {
 
-.large-font {
+}*/
+
+.page-title {
+  color: black;
   font-size: 3.5em;
   text-align:center;
 }
