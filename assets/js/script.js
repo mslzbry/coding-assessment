@@ -5,9 +5,9 @@ var timerElement = document.querySelector('.timer-count')
 var startButton = document.querySelector('#start-button')
 var options = $('#options')
 var feedback = document.querySelector('#feedback')
+var main = $('main')
 
-var scoreCounter = 0
-var isWin = false
+var gameDone = false
 var timer
 var timerCount
 var points = 0
@@ -33,7 +33,7 @@ function init () {
 
 // The startGame function is called when the start button is clicked
 function startGame () {
-  isWin = false
+  gameDone = false
   timerCount = 90
   // Prevents start button from being clicked when round is in progress
   startButton.disabled = true
@@ -43,7 +43,6 @@ function startGame () {
 }
 
 function winGame () {
-  scoreCounter++
   startButton.disabled = false
   setWins()
 }
@@ -56,7 +55,7 @@ function startTimer () {
     timerElement.textContent = timerCount
     if (timerCount >= 0) {
       // Tests if win condition is met
-      if (isWin && timerCount > 0) {
+      if (gameDone && timerCount > 0) {
         // Clears interval and stops timer
         clearInterval(timer)
         winGame()
@@ -75,26 +74,59 @@ var optionButtons
 //starts quiz
 
 function displayQuestion (questionIndex) {
-  //var questionIndex = 0 // the index we use to map the list of questions to the list of choices and answers
-  var chosenQuestion = questions[questionIndex]
-  question.textContent = chosenQuestion
+  if (questionIndex <= questions.length - 1) {
+    //questionIndex is the index we use to map the list of questions to the list of choices and answers
+    var chosenQuestion = questions[questionIndex]
+    question.textContent = chosenQuestion
 
-  for (var j = 0; j < choices[questionIndex].length; j++) {
-    options.append(
-      '<li><button class="option">' +
-        choices[questionIndex][j] +
-        '</button></li>'
-    )
-  }
-  optionButtons = document.querySelectorAll('.option')
+    // remove existing buttons from previous question
+    if (questionIndex != 0) {
+      options.empty()
+    }
 
-  // add event listener to each button
-  for (var k = 0; k < optionButtons.length; k++) {
-    optionButtons[k].addEventListener('click', e => {
-      checkAnswer(e.target.innerText, questionIndex)
-    })
+    for (var j = 0; j < choices[questionIndex].length; j++) {
+      options.append(
+        '<li><button class="option">' +
+          choices[questionIndex][j] +
+          '</button></li>'
+      )
+    }
+    optionButtons = document.querySelectorAll('.option')
+
+    // add event listener to each button
+    for (var k = 0; k < optionButtons.length; k++) {
+      optionButtons[k].addEventListener('click', e => {
+        checkAnswer(e.target.innerText, questionIndex)
+      })
+    }
+  } else {
+    // call gameOver() to end the game
+    gameOver()
   }
-  console.log(optionButtons)
+}
+
+function gameOver () {
+  console.log('GAME OVER')
+  gameDone = true
+  // removes the cards in the sections from the page
+  $('section').remove()
+  // change the html to have user add initials
+  enterInitials()
+  // on saving the user's initials, prev scores displayed in list via local storage
+  // also have the ability to play again
+}
+
+function enterInitials () {
+  // create a section/new card for displaying the score and for entering initials
+  var section = $('<section>')
+  var divCard = $('<div class="card">')
+  var h2 = $('<h2>')
+  h2.text('All done!')
+  divCard.css('display', 'block')
+  divCard.append(h2)
+  section.append(divCard)
+  main.append(section)
+  console.log('points: ', points)
 }
 
 function startQuiz () {
@@ -125,30 +157,30 @@ function checkAnswer (selectedAnswer, questionIndex) {
     // substract 10s from time
     timerCount = timerCount - 10
   }
-  // move onto next question
+  // move on to next question
   questionIndex++
   displayQuestion(questionIndex)
 }
 
 // Updates win count on screen and sets win count to client storage
 function setWins () {
-  score.textContent = scoreCounter
-  localStorage.setItem('scoreCount', scoreCounter)
+  score.textContent = points
+  localStorage.setItem('points', points)
 }
 
 // These functions are used by init
 function getWins () {
   // Get stored value from client storage, if it exists
-  var storedScore = localStorage.getItem('scoreCount')
+  var storedScore = localStorage.getItem('points')
   // If stored value doesn't exist, set counter to 0
   if (storedScore === null) {
-    scoreCounter = 0
+    points = 0
   } else {
     // If a value is retrieved from client storage set the winCounter to that value
-    scoreCounter = storedScore
+    points = storedScore
   }
   //Render win count to page
-  score.textContent = scoreCounter
+  score.textContent = points
 }
 
 // Attach event listener to start button to call startGame function on click
@@ -162,7 +194,7 @@ var resetButton = document.querySelector('.reset-button')
 
 function resetGame () {
   // clears score to zero
-  scoreCounter = 0
+  points = 0
 
   // shows score, stores in local
   setWins()
