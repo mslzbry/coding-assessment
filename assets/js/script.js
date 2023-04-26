@@ -34,7 +34,7 @@ function init () {
 // The startGame function is called when the start button is clicked
 function startGame () {
   gameDone = false
-  timerCount = 90
+  timerCount = 11
   // Prevents start button from being clicked when round is in progress
   startButton.disabled = true
   /*renderBlanks()*/
@@ -66,6 +66,7 @@ function startTimer () {
       // Clears interval
       clearInterval(timer)
       //TODO when time runs out, page with high score and initials
+      gameOver()
     }
   }, 1000)
 }
@@ -116,6 +117,15 @@ function gameOver () {
   // also have the ability to play again
 }
 
+function submitForm () {
+  console.log('submit form')
+  // once user typed in initials and submitted form,
+  // save in local storage and also load the high scores page
+  var initials = document.getElementById('initials').value
+  console.log(initials)
+  console.log(Date.now())
+}
+
 function enterInitials () {
   // create a section/new card for displaying the score and for entering initials
   var section = $('<section>')
@@ -125,6 +135,14 @@ function enterInitials () {
   divCard.css('display', 'block')
   divCard.append(h2)
   section.append(divCard)
+
+  divCard.append(
+    '<form onsubmit="return false;"><label>Initials:</label><br><input type="text" id="initials"><br></br><input type="submit" value="Submit" onclick="submitForm()"></form>'
+  )
+  var h3 = $('<h3>')
+  h3.text('Score: ' + points)
+  divCard.append(h3)
+
   main.append(section)
   console.log('points: ', points)
 }
@@ -165,13 +183,14 @@ function checkAnswer (selectedAnswer, questionIndex) {
 // Updates win count on screen and sets win count to client storage
 function setWins () {
   score.textContent = points
-  localStorage.setItem('points', points)
+  //localStorage.setItem('points', points)
 }
 
 // These functions are used by init
 function getWins () {
   // Get stored value from client storage, if it exists
-  var storedScore = localStorage.getItem('points')
+  //var storedScore = localStorage.getItem('points')
+  var storedScore = null
   // If stored value doesn't exist, set counter to 0
   if (storedScore === null) {
     points = 0
