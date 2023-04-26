@@ -34,7 +34,7 @@ function init () {
 // The startGame function is called when the start button is clicked
 function startGame () {
   gameDone = false
-  timerCount = 11
+  timerCount = 14
   // Prevents start button from being clicked when round is in progress
   startButton.disabled = true
   /*renderBlanks()*/
@@ -122,8 +122,42 @@ function submitForm () {
   // once user typed in initials and submitted form,
   // save in local storage and also load the high scores page
   var initials = document.getElementById('initials').value
-  console.log(initials)
-  console.log(Date.now())
+
+  var records = JSON.parse(localStorage.getItem('records') || '[]')
+  console.log('fetching records: ', records)
+  var entry = {
+    initials: initials,
+    score: points,
+    timeStamp: Date.now()
+  }
+  records.push(entry)
+  localStorage.setItem('records', JSON.stringify(records))
+  showScores()
+}
+
+function showScores () {
+  //displays all scores/records
+  $('section').remove() //remove initial entry section
+  var section = $('<section>')
+  var divCard = $('<div class="card">')
+  var h2 = $('<h2>')
+  h2.text('High Scores:')
+  divCard.css('display', 'block')
+  divCard.append(h2)
+
+  var records = JSON.parse(localStorage.getItem('records') || '[]')
+  records = records.sort((a, b) => (a.score < b.score ? 1 : -1)) //sorts score by descending order
+  console.log('sorted ', records)
+  var ol = $('<ol>')
+  for (var i = 0; i < records.length; i++) {
+    ol.append(
+      '<li>' + records[i]['initials'] + ' ' + records[i]['score'] + '</li>'
+    )
+  }
+  ol.css('list-style', 'decimal')
+  divCard.append(ol)
+  section.append(divCard)
+  main.append(section)
 }
 
 function enterInitials () {
@@ -131,7 +165,7 @@ function enterInitials () {
   var section = $('<section>')
   var divCard = $('<div class="card">')
   var h2 = $('<h2>')
-  h2.text('All done!')
+  h2.text('All Done!')
   divCard.css('display', 'block')
   divCard.append(h2)
   section.append(divCard)
@@ -173,7 +207,11 @@ function checkAnswer (selectedAnswer, questionIndex) {
     // display wrong on screen
     feedback.textContent = 'Incorrect!'
     // substract 10s from time
-    timerCount = timerCount - 10
+    if (timerCount >= 10) {
+      timerCount = timerCount - 10
+    } else {
+      gameOver()
+    }
   }
   // move on to next question
   questionIndex++
