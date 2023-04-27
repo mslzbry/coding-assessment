@@ -63,7 +63,7 @@ section {
   border-radius: 8px;
 }
 
-.word-guess {
+.answer-question {
   width: 55vw;
   height: 400px;
 }
@@ -83,11 +83,6 @@ section {
   padding: 20px;
 }
 
-/*
-.question {
-
-}*/
-
 .page-title {
   color: black;
   font-size: 3.5em;
@@ -105,11 +100,6 @@ section {
 .timer-text {
   padding: 55px;
 }
-
-/*
-ol li {
-  background-color:
-}*/
 
 ol {
   list-style: none;
@@ -129,7 +119,7 @@ li button::before {
     flex-direction: column;
   }
 
-  .word-guess,
+  .answer-question,
   .results {
     width: 90vw;
   }

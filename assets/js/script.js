@@ -17,56 +17,55 @@ var questionIndex = 0
 var questions = [
   'What programming language is one of the core technologies of the World Wide Web, alongside HTML and CSS?',
   'How do you add comments to JavaScript code?',
-  'What are the looping structures in JavaScript?'
+  'What are the looping structures in JavaScript?',
+  'An array in JavaScript is:'
 ]
-var answers = ['JavaScript', '//', 'All of these']
+var answers = ['JavaScript', '//', 'All of these', 'An ordered list of values']
 var choices = [
   ['JavaScript', 'Hot Mail', 'AOL', 'Facebook'],
   ['!!', '??', '//', '##'],
-  ['For', 'While', 'Do-While', 'All of these']
+  ['For', 'While', 'Do-While', 'All of these'],
+  [
+    'An ordered list of values',
+    'An ordered list of objects',
+    'An ordered list of strings',
+    'An ordered list of functions'
+  ]
 ]
 
-// The init function is called when the page loads
-function init () {
-  getWins()
-}
-
-// The startGame function is called when the start button is clicked
+// used to start the game
 function startGame () {
+  questionIndex = 0
+  points = 0
+  score.textContent = points
   gameDone = false
-  timerCount = 14
-  // Prevents start button from being clicked when round is in progress
+  timerCount = 90
+  // disables start button when game in progress
   startButton.disabled = true
-  /*renderBlanks()*/
   startQuiz()
   startTimer()
 }
 
 function winGame () {
   startButton.disabled = false
-  setWins()
 }
 
-// The setTimer function starts and stops the timer and triggers winGame()
+// starts timer
 function startTimer () {
-  // Sets timer
   timer = setInterval(function () {
     timerCount--
     timerElement.textContent = timerCount
     if (timerCount >= 0) {
-      // Tests if win condition is met
       if (gameDone && timerCount > 0) {
-        // Clears interval and stops timer
         clearInterval(timer)
         winGame()
       }
     }
-    // Tests if time has run out
     if (timerCount === 0) {
-      // Clears interval
       clearInterval(timer)
-      //TODO when time runs out, page with high score and initials
-      gameOver()
+      if (!gameDone) {
+        gameOver()
+      }
     }
   }, 1000)
 }
@@ -75,6 +74,7 @@ var optionButtons
 //starts quiz
 
 function displayQuestion (questionIndex) {
+  console.log('question index: ', questionIndex)
   if (questionIndex <= questions.length - 1) {
     //questionIndex is the index we use to map the list of questions to the list of choices and answers
     var chosenQuestion = questions[questionIndex]
@@ -86,6 +86,7 @@ function displayQuestion (questionIndex) {
     }
 
     for (var j = 0; j < choices[questionIndex].length; j++) {
+      console.log('choice ', choices[questionIndex][j])
       options.append(
         '<li><button class="option">' +
           choices[questionIndex][j] +
@@ -102,6 +103,7 @@ function displayQuestion (questionIndex) {
     }
   } else {
     // call gameOver() to end the game
+    console.log('game over in display question')
     gameOver()
   }
 }
@@ -110,7 +112,12 @@ function gameOver () {
   console.log('GAME OVER')
   gameDone = true
   // removes the cards in the sections from the page
-  $('section').remove()
+  $('.game').hide()
+  // delete the buttons with the answers so they can get recreated again on new game
+  options.empty()
+  // remove the correct / incorrect feedback text
+  feedback.textContent = ''
+
   // change the html to have user add initials
   enterInitials()
   // on saving the user's initials, prev scores displayed in list via local storage
@@ -124,7 +131,6 @@ function submitForm () {
   var initials = document.getElementById('initials').value
 
   var records = JSON.parse(localStorage.getItem('records') || '[]')
-  console.log('fetching records: ', records)
   var entry = {
     initials: initials,
     score: points,
@@ -132,13 +138,16 @@ function submitForm () {
   }
   records.push(entry)
   localStorage.setItem('records', JSON.stringify(records))
+
+  // remove the card with the form
+  $('#initials-section').remove() //remove initial entry section
   showScores()
 }
 
+var ol
 function showScores () {
   //displays all scores/records
-  $('section').remove() //remove initial entry section
-  var section = $('<section>')
+  var section = $('<section id="highscores-section">')
   var divCard = $('<div class="card">')
   var h2 = $('<h2>')
   h2.text('High Scores:')
@@ -147,8 +156,7 @@ function showScores () {
 
   var records = JSON.parse(localStorage.getItem('records') || '[]')
   records = records.sort((a, b) => (a.score < b.score ? 1 : -1)) //sorts score by descending order
-  console.log('sorted ', records)
-  var ol = $('<ol>')
+  ol = $('<ol>')
   for (var i = 0; i < records.length; i++) {
     ol.append(
       '<li>' + records[i]['initials'] + ' ' + records[i]['score'] + '</li>'
@@ -156,13 +164,38 @@ function showScores () {
   }
   ol.css('list-style', 'decimal')
   divCard.append(ol)
+  divCard.append('<button class="replay-button">Replay</button>')
+  divCard.append('<button class="reset-scores">Reset Scores</button>')
   section.append(divCard)
   main.append(section)
+
+  var replayButton = document.querySelector('.replay-button')
+  replayButton.addEventListener('click', replayGame)
+  var resetScoresButton = document.querySelector('.reset-scores')
+  resetScoresButton.addEventListener('click', resetScores)
+}
+
+function resetScores () {
+  // clear local storage to erase all the high scores
+  console.log('reset scores')
+  localStorage.setItem('records', '[]')
+  // need to refresh the html to show the blank high scores list now
+  // do this by emptying the ol containing the scores
+  ol.empty()
+}
+
+function replayGame () {
+  console.log('replaying game')
+  // clear the high scores card
+  $('#highscores-section').remove()
+  // then start game again but need to display the q/a cards again
+  $('.game').show()
+  startGame()
 }
 
 function enterInitials () {
   // create a section/new card for displaying the score and for entering initials
-  var section = $('<section>')
+  var section = $('<section id="initials-section">')
   var divCard = $('<div class="card">')
   var h2 = $('<h2>')
   h2.text('All Done!')
@@ -185,7 +218,6 @@ function startQuiz () {
   startButton.style.display = 'none'
   var cards = document.getElementsByClassName('card')
   for (var i = 0; i < cards.length; i++) {
-    console.log(cards[i])
     cards[i].style.display = 'block'
   }
   displayQuestion(questionIndex)
@@ -194,6 +226,7 @@ function startQuiz () {
 function checkAnswer (selectedAnswer, questionIndex) {
   console.log(questionIndex)
   console.log(selectedAnswer)
+  console.log('points is: ', points)
 
   if (answers[questionIndex] === selectedAnswer) {
     console.log('correct')
@@ -218,43 +251,4 @@ function checkAnswer (selectedAnswer, questionIndex) {
   displayQuestion(questionIndex)
 }
 
-// Updates win count on screen and sets win count to client storage
-function setWins () {
-  score.textContent = points
-  //localStorage.setItem('points', points)
-}
-
-// These functions are used by init
-function getWins () {
-  // Get stored value from client storage, if it exists
-  //var storedScore = localStorage.getItem('points')
-  var storedScore = null
-  // If stored value doesn't exist, set counter to 0
-  if (storedScore === null) {
-    points = 0
-  } else {
-    // If a value is retrieved from client storage set the winCounter to that value
-    points = storedScore
-  }
-  //Render win count to page
-  score.textContent = points
-}
-
-// Attach event listener to start button to call startGame function on click
 startButton.addEventListener('click', startGame)
-
-// Calls init() so that it fires when page opened
-init()
-
-// Bonus: Add reset button
-var resetButton = document.querySelector('.reset-button')
-
-function resetGame () {
-  // clears score to zero
-  points = 0
-
-  // shows score, stores in local
-  setWins()
-}
-// Attaches event listener to button
-resetButton.addEventListener('click', resetGame)
