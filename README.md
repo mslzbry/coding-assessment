@@ -18,4 +18,6 @@ Throughout this entire process, I added relevant comments in the JavaScript; the
 
 ### Site Link: https://mslzbry.github.io/coding-assessment/
 
-![Alt text](screenshot.png 'screenshot')
+## Screenshot:
+
+![Alt text](assets/images/screenshot.png 'screenshot')
